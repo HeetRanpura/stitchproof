@@ -18,3 +18,4 @@ dist/
 .stitchproof_cache/
 .gradio/
 .DS_Store
+.claude/
