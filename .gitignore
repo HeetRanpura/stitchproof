@@ -1,0 +1,20 @@
+# secrets
+.env
+# private real patterns: never commit
+data/real/
+# model weights and exports
+models/
+*.gguf
+*.safetensors
+# python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+# local caches
+.stitchproof_cache/
+.gradio/
+.DS_Store
