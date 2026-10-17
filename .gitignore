@@ -19,3 +19,5 @@ dist/
 .gradio/
 .DS_Store
 .claude/
+train/logs/
+train/*.log

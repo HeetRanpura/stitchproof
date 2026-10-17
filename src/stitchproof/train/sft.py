@@ -26,7 +26,9 @@ LOG_DIR = Path("train/logs")
 TRAIN_PRICE_PER_M = 0.737  # US$ per million training tokens for Qwen3.5-4B (recheck in the Tinker console)
 
 LORA_RANK = 32
-EPOCHS = 2
+EPOCHS = 1  # spec says 2; cut to 1 to fit the remaining credit (see README)
+EVAL_EVERY = 45
+SAVE_EVERY = 60
 BATCH_SIZE = 8
 MAX_LENGTH = 2048
 
@@ -81,9 +83,12 @@ class TwoFileBuilder(ChatDatasetBuilder):
 
 
 def estimate() -> tuple[int, int, float]:
+    """Training tokens for all epochs plus the val-NLL passes, priced at the training rate (upper bound)."""
     train_rows = _read(TRAIN)
     tokens = count_tokens(train_rows)
-    total = tokens * EPOCHS
+    steps = math.ceil(len(train_rows) / BATCH_SIZE) * EPOCHS
+    val_passes = steps // EVAL_EVERY + 1
+    total = tokens * EPOCHS + count_tokens(_read(VAL)) * val_passes
     return len(train_rows), total, total / 1e6 * TRAIN_PRICE_PER_M
 
 
@@ -119,7 +124,7 @@ def main() -> None:
     args = ap.parse_args()
 
     n, total, cost = estimate()
-    print(f"{n} training examples, {EPOCHS} epochs, about {total:,} training tokens -> about US${cost:.2f} at ${TRAIN_PRICE_PER_M}/M")
+    print(f"{n} training examples, {EPOCHS} epoch(s), about {total:,} tokens incl. val passes -> about US${cost:.2f} at ${TRAIN_PRICE_PER_M}/M")
     if args.dry_run:
         return
     if cost > args.max_usd:
@@ -151,8 +156,8 @@ def main() -> None:
         lr_schedule="linear",
         num_epochs=EPOCHS,
         lora_rank=LORA_RANK,
-        eval_every=20,
-        save_every=50,
+        eval_every=EVAL_EVERY,
+        save_every=SAVE_EVERY,
         ttl_seconds=None,
     )
     print(f"lr {lr:.2e}, {steps_per_epoch} steps/epoch, logging to {cfg.log_path}")

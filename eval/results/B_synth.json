@@ -1,0 +1,260 @@
+{
+ "approach": "B",
+ "model": "openai/gpt-oss-120b",
+ "model_path": null,
+ "set": "synth",
+ "mode": "direct",
+ "n_patterns": 15,
+ "usage": {
+  "prompt_tokens": 7743,
+  "completion_tokens": 11471,
+  "calls": 15,
+  "cached": 0
+ },
+ "metrics": {
+  "errors_caught": {
+   "num": 6,
+   "den": 11,
+   "pct": 54.5
+  },
+  "false_alarms": {
+   "num": 62,
+   "den": 162,
+   "pct": 38.3
+  },
+  "pattern_accuracy": {
+   "num": 2,
+   "den": 15,
+   "pct": 13.3
+  },
+  "flags_on_non_rows": 0,
+  "valid_json": {
+   "num": 15,
+   "den": 15,
+   "pct": 100.0
+  },
+  "line_exact": {
+   "num": 0,
+   "den": 0,
+   "pct": null
+  },
+  "count_equiv": {
+   "num": 0,
+   "den": 0,
+   "pct": null
+  },
+  "stated_faithful": {
+   "num": 0,
+   "den": 0,
+   "pct": null
+  },
+  "cant_check_correct": 0,
+  "cant_check_wrong": 0,
+  "by_error_type": {
+   "NON_DIVISIBLE_AROUND": {
+    "num": 0,
+    "den": 1,
+    "pct": 0.0
+   },
+   "WRONG_FOUNDATION": {
+    "num": 2,
+    "den": 3,
+    "pct": 66.7
+   },
+   "WRONG_REPEAT_TIMES": {
+    "num": 1,
+    "den": 1,
+    "pct": 100.0
+   },
+   "WRONG_RUN_LENGTH": {
+    "num": 1,
+    "den": 2,
+    "pct": 50.0
+   },
+   "WRONG_STATED": {
+    "num": 2,
+    "den": 4,
+    "pct": 50.0
+   }
+  },
+  "missing_stated_warned": {
+   "num": 0,
+   "den": 0,
+   "pct": null
+  }
+ },
+ "predictions": [
+  {
+   "id": "eval-0000",
+   "flagged": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\"row\":\"Round 3\",\"reason\":\"Stitch count mismatch; pattern yields 20 stitches but states 15\"},\n    {\"row\":\"Round 4\",\"reason\":\"Stitch count mismatch; pattern yields 16 stitches but states 20\"},\n    {\"row\":\"Round 5\",\"reason\":\"Stitch count mismatch; pattern yields 20 stitches but states 25\"},\n    {\"row\":\"Round 6\",\"reason\":\"Stitch count mismatch; pattern yields 24 stitches but states 30\"},\n    {\"row\":\"Round 7\",\"reason\":\"Stitch count mismatch; pattern yields 24 stitches but states 30\"},\n    {\"row\":\"Round 8\",\"reason\":\"Stitch count mismatch; pattern yields 20 stitches but states 25\"},\n    {\"row\":\"Round 9\",\"reason\":\"Stitch count mismatch; pattern yields 16 stitches but states 20\"},\n    {\"row\":\"Round 10\",\"reason\":\"Stitch count mismatch; pattern yields 12 stitches but states 15\"},\n    {\"row\":\"Round 11\",\"reason\":\"Stitch count mismatch; pattern yields 8 stitches but states 10\"},\n    {\"row\":\"Round 12\",\"reason\":\"Stitch count mismatch; pattern yields 4 stitches but states 5\"}\n  ]\n}"
+  },
+  {
+   "id": "eval-0001",
+   "flagged": [
+    6
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\n      \"row\": \"Row 4 - CH 1, turn, SC in the next st, HDC in each of the next 3 st, DC in each of the next 6 st, HDC in each of the next 3 st, SC in the next st. You should have 17 stitches\",\n      \"reason\": \"Stitch count totals 14, not the stated 17\"\n    }\n  ]\n}"
+  },
+  {
+   "id": "eval-0002",
+   "flagged": [
+    10,
+    11,
+    12,
+    13
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\n      \"row\": \"Round 9\",\n      \"reason\": \"Repeat count uses only 3 repeats (9 stitches) leaving 3 stitches unworked; should repeat 4 times to use all 12 stitches and produce 15.\"\n    },\n    {\n      \"row\": \"Rounds 10-11\",\n      \"reason\": \"Stitch count after Round 9 should be 16, not 15 as stated.\"\n    },\n    {\n      \"row\": \"Round 12\",\n      \"reason\": \"Pattern expects 15 stitches to work in groups of 5, but previous round count is incorrect; also 15 is not divisible by 5 for the repeat.\"\n    },\n    {\n      \"row\": \"Round 13\",\n      \"reason\": \"Stitch count carried over is wrong; should match result of Round 12, not 18 as stated.\"\n    }\n  ]\n}"
+  },
+  {
+   "id": "eval-0003",
+   "flagged": [
+    11
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\n      \"row\": \"Round 9\",\n      \"reason\": \"Stitch count mismatch: instructions keep 18 stitches, but pattern states 16\"\n    }\n  ]\n}"
+  },
+  {
+   "id": "eval-0004",
+   "flagged": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\"row\":\"Round 3\",\"reason\":\"Stitch count increases to 12, not 9\"},\n    {\"row\":\"Round 4\",\"reason\":\"Stitch count remains 12, not 9\"},\n    {\"row\":\"Round 5\",\"reason\":\"Stitch count remains 12, not 9\"},\n    {\"row\":\"Round 6\",\"reason\":\"Stitch count becomes 16, not 12\"},\n    {\"row\":\"Round 7\",\"reason\":\"Stitch count stays 16, not 12\"},\n    {\"row\":\"Round 8\",\"reason\":\"Stitch count becomes 22, not 15\"},\n    {\"row\":\"Round 9\",\"reason\":\"Stitch count stays 22, not 15\"},\n    {\"row\":\"Round 10\",\"reason\":\"Stitch count becomes 28, not 18\"},\n    {\"row\":\"Round 11\",\"reason\":\"Stitch count stays 28, not 18\"},\n    {\"row\":\"Round 12\",\"reason\":\"Stitch count becomes 34, not 21\"},\n    {\"row\":\"Round 13\",\"reason\":\"Stitch count stays 34, not 21\"},\n    {\"row\":\"Round 14\",\"reason\":\"Stitch count becomes 40, not 24\"},\n    {\"row\":\"Round 15\",\"reason\":\"Stitch count stays 40, not 24\"},\n    {\"row\":\"Round 16\",\"reason\":\"Stitch count stays 40, not 24\"},\n    {\"row\":\"Round 17\",\"reason\":\"Stitch count becomes 46, not 27\"},\n    {\"row\":\"Round 18\",\"reason\":\"Stitch count stays 46, not 27\"},\n    {\"row\":\"Round 19\",\"reason\":\"Stitch count stays 46, not 27\"}\n  ]\n}"
+  },
+  {
+   "id": "eval-0005",
+   "flagged": [
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\"row\":\"Row 1\",\"reason\":\"Stitch count mismatch: chaining 16 gives 15 sc, not 18\"},\n    {\"row\":\"Row 2\",\"reason\":\"Stitch count mismatch: starting with 15 sts, two inv dec and sc to last 2 sts yields 11 sts, not 16\"},\n    {\"row\":\"Row 3\",\"reason\":\"Stitch count mismatch: counts do not align with previous row\"},\n    {\"row\":\"Row 4\",\"reason\":\"Stitch count mismatch: counts do not align with previous row\"},\n    {\"row\":\"Row 5\",\"reason\":\"Stitch count mismatch: counts do not align with previous row\"},\n    {\"row\":\"Row 6\",\"reason\":\"Stitch count mismatch: counts do not align with previous row\"},\n    {\"row\":\"Row 7\",\"reason\":\"Stitch count mismatch: counts do not align with previous row\"}\n  ]\n}"
+  },
+  {
+   "id": "eval-0006",
+   "flagged": [
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\n      \"row\": \"Round 11\",\n      \"reason\": \"Repeat adds only 1 stitch per repeat; repeating 2 times yields 17 stitches, not the stated 18\"\n    },\n    {\n      \"row\": \"Round 12\",\n      \"reason\": \"Stitch count carried from Round 11 is 17, but pattern expects 18\"\n    },\n    {\n      \"row\": \"Round 13\",\n      \"reason\": \"Based on previous count (17) the repeats add 3 stitches, resulting in 20, not the stated 21\"\n    },\n    {\n      \"row\": \"Rounds 14-15\",\n      \"reason\": \"Stitch count from Round 13 is 20, but pattern says 21\"\n    },\n    {\n      \"row\": \"Round 16\",\n      \"reason\": \"Pattern calls for 21 stitches to work into, but only 20 are present\"\n    }\n  ]\n}"
+  },
+  {
+   "id": "eval-0007",
+   "flagged": [
+    9,
+    11,
+    12,
+    13
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\"row\":\"Round 12\",\"reason\":\"Repeat pattern (4 sc, sc2tog) does not evenly divide 48 stitches; 8 repeats use only 40 stitches, leaving 8 unworked.\"},\n    {\"row\":\"Round 13\",\"reason\":\"Repeat pattern (3 sc, sc2tg) starting from 40 stitches leaves 8 stitches unworked after 8 repeats.\"},\n    {\"row\":\"Round 14\",\"reason\":\"Repeat pattern (2 sc, sc2tg) starting from 32 stitches leaves 8 stitches unworked after 8 repeats.\"},\n    {\"row\":\"Round 15\",\"reason\":\"Repeat pattern (1 sc, sc2tg) starting from 24 stitches leaves 8 stitches unworked after 8 repeats.\"}\n  ]\n}"
+  },
+  {
+   "id": "eval-0008",
+   "flagged": [
+    5,
+    6,
+    7,
+    9
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\n      \"row\": \"Row 2-3\",\n      \"reason\": \"Chain-2 counts as a stitch, increasing total to 24, but pattern says 23\"\n    },\n    {\n      \"row\": \"Row 4-6\",\n      \"reason\": \"Chain-2 adds a stitch, resulting in 24 stitches instead of the stated 23\"\n    },\n    {\n      \"row\": \"Rows 7-11\",\n      \"reason\": \"Chain-2 adds a stitch; after skipping first stitch, you still have 24 stitches, not 23\"\n    },\n    {\n      \"row\": \"Rows 12-13\",\n      \"reason\": \"Chain-2 adds a stitch; after skipping first stitch, total is 24, not the claimed 23\"\n    }\n  ]\n}"
+  },
+  {
+   "id": "eval-0009",
+   "flagged": [
+    12,
+    14
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\n      \"row\": \"Round 15\",\n      \"reason\": \"Stitch count mismatch: 42 stitches with repeats of 5 sc + invdec should yield 35, not 36\"\n    },\n    {\n      \"row\": \"Round 17\",\n      \"reason\": \"Repeat pattern (3 sc + invdec) does not evenly divide the 30 stitches from previous round\"\n    }\n  ]\n}"
+  },
+  {
+   "id": "eval-0010",
+   "flagged": [
+    6,
+    7
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\n      \"row\": \"Round 4\",\n      \"reason\": \"Stitch count unchanged (16), but pattern states 12\"\n    },\n    {\n      \"row\": \"Round 5\",\n      \"reason\": \"Repeat pattern (2 sc, inc) does not divide evenly into 16 stitches and would produce 21 stitches, not 16\"\n    }\n  ]\n}"
+  },
+  {
+   "id": "eval-0011",
+   "flagged": [
+    7,
+    9,
+    11
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\n      \"row\": \"Round 6\",\n      \"reason\": \"Repeat count does not cover all stitches; only 4 repeats described but 12 stitches need to be worked, leading to unworked stitches and incorrect total.\"\n    },\n    {\n      \"row\": \"Round 8\",\n      \"reason\": \"Repeat pattern consumes 3 stitches each repeat; to reach 20 from 16 requires 4 repeats, leaving 4 stitches unworked.\"\n    },\n    {\n      \"row\": \"Round 11\",\n      \"reason\": \"Repeat described (3 more times) only covers 16 of the 20 stitches, leaving 4 stitches unworked despite reaching the stated total.\"\n    }\n  ]\n}"
+  },
+  {
+   "id": "eval-0012",
+   "flagged": [],
+   "valid": true,
+   "raw": "{\"errors\":[]}"
+  },
+  {
+   "id": "eval-0013",
+   "flagged": [
+    3,
+    4,
+    5,
+    7,
+    8,
+    9
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\"row\":\"Row 1\",\"reason\":\"Resulting stitch count is 9, not the stated 6\"},\n    {\"row\":\"Rows 2-7\",\"reason\":\"Starting with 9 stitches, each row yields 9 stitches, not the stated 6\"},\n    {\"row\":\"Rows 8-9\",\"reason\":\"Starting with 9 stitches, each row yields 9 stitches, not the stated 6\"},\n    {\"row\":\"Row 11\",\"reason\":\"Starting with 9 stitches, row yields 9 stitches, not the stated 6\"},\n    {\"row\":\"Row 12\",\"reason\":\"Starting with 9 stitches, row yields 9 stitches, not the stated 6\"},\n    {\"row\":\"Row 13\",\"reason\":\"Starting with 9 stitches, row yields 9 stitches, not the stated 6\"}\n  ]\n}"
+  },
+  {
+   "id": "eval-0014",
+   "flagged": [
+    5,
+    7,
+    9,
+    11
+   ],
+   "valid": true,
+   "raw": "{\n  \"errors\": [\n    {\n      \"row\": \"Round 4\",\n      \"reason\": \"Repeat only 3 times leaves unworked stitches; cannot cover all 6 stitches\"\n    },\n    {\n      \"row\": \"Round 7\",\n      \"reason\": \"Pattern repeats groups of 2 stitches plus an increase; 9 stitches cannot be divided into groups of 2\"\n    },\n    {\n      \"row\": \"Round 9\",\n      \"reason\": \"Repeat only 3 times consumes 9 stitches, leaving unworked stitches; cannot cover full round\"\n    },\n    {\n      \"row\": \"Round 11\",\n      \"reason\": \"Repeating groups of 4 stitches plus an increase cannot evenly divide 15 stitches; leaves unworked stitches\"\n    }\n  ]\n}"
+  }
+ ]
+}
