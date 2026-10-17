@@ -1,0 +1,214 @@
+{
+ "approach": "A",
+ "model": "Qwen/Qwen3.5-4B",
+ "model_path": null,
+ "set": "pilot",
+ "mode": "direct",
+ "n_patterns": 15,
+ "usage": {
+  "prompt_tokens": 6276,
+  "completion_tokens": 3658,
+  "calls": 15,
+  "cached": 0
+ },
+ "metrics": {
+  "errors_caught": {
+   "num": 4,
+   "den": 6,
+   "pct": 66.7
+  },
+  "false_alarms": {
+   "num": 27,
+   "den": 160,
+   "pct": 16.9
+  },
+  "pattern_accuracy": {
+   "num": 5,
+   "den": 15,
+   "pct": 33.3
+  },
+  "flags_on_non_rows": 0,
+  "valid_json": {
+   "num": 14,
+   "den": 15,
+   "pct": 93.3
+  },
+  "line_exact": {
+   "num": 0,
+   "den": 0,
+   "pct": null
+  },
+  "count_equiv": {
+   "num": 0,
+   "den": 0,
+   "pct": null
+  },
+  "stated_faithful": {
+   "num": 0,
+   "den": 0,
+   "pct": null
+  },
+  "cant_check_correct": 0,
+  "cant_check_wrong": 0,
+  "by_error_type": {
+   "NON_DIVISIBLE_AROUND": {
+    "num": 0,
+    "den": 1,
+    "pct": 0.0
+   },
+   "WRONG_FOUNDATION": {
+    "num": 2,
+    "den": 2,
+    "pct": 100.0
+   },
+   "WRONG_RUN_LENGTH": {
+    "num": 0,
+    "den": 1,
+    "pct": 0.0
+   },
+   "WRONG_STATED": {
+    "num": 2,
+    "den": 2,
+    "pct": 100.0
+   }
+  },
+  "missing_stated_warned": {
+   "num": 0,
+   "den": 0,
+   "pct": null
+  }
+ },
+ "predictions": [
+  {
+   "id": "pilot-0000",
+   "flagged": [
+    4,
+    6,
+    7,
+    12,
+    13,
+    14
+   ],
+   "valid": true,
+   "raw": "{\"errors\":[{\"row\":\"3\",\"reason\":\"Instruction '*1sc, increase; rep from * around' on 12 stitches results in 15 stitches, but the pattern states 15 stitches. However, the math is correct (12 + 3 increases = 15). Wait, let me re-calculate row 3. 12 stitches. Repeat '1 sc, increase' around. That adds 1 stitch per repeat. 12 repeats = 12 increases. 12 + 12 = 24. The pattern says 15. This is an error.\"},{\"row\":\"5\",\"reason\":\"Instruction '*3sc, increase; rep from * around' on 24 stitches results in 27 stitches, but the pattern does not state the count. Assuming the pattern implies a count, 24 + 24 = 48. If the pattern meant to reach a specific count not listed, it's missing. But strictly checking the instruction vs stated count: no stated count. Let's look at row 6.\"},{\"row\":\"6\",\"reason\":\"Instruction '2sc, increase, (4sc, increase) 5 times, 2sc' on 36 stitches. 2sc (2) + inc (1) + 5*(4sc + inc) (5*5=25) + 2sc (2). Total added: 1 + 25 = 26. 36 + 26 = 62. Pattern states 36. This is a massive discrepancy. The instruction creates 62 stitches, pattern says 36.\"},{\"row\":\"14\",\"reason\":\"Instruction '(4sc, inv dec) 6 times' on 36 stitches. 6 decreases. 36 - 6 = 30. Pattern states 30. Correct.\"},{\"row\":\"15\",\"reason\":\"Instruction '(3sc, inv dec) 6 times' on 30 stitches. 6 decreases. 30 - 6 = 24. Pattern states 18 (implied by next row logic or just missing count? The text says '15) (3sc, inv dec) 6 times' without a count. If the count is missing, I can't verify. But looking at row 16: 18 stitches. If row 15 resulted in 18, then 6 decreases from 24 would be 18. So row 15 must have been 24. 30 - 6 = 24. So row 15 is mathematically correct to reach 24, but the pattern text doesn't show the count. Let's assume the error is in the flow. Row 14 ends at 30. Row 15 does 6 dec -> 24. Row 16 does 6 dec -> 18. This works. Is there an error? Let's re-read row 3. 12 stitches. *1sc, increase. 12 repeats. 12 increases. 12+12=24. Pattern says 15. ERROR.\"},{\"row\":\"16\",\"reason\":\"Instruction '*2sc, inv dec; rep from * around' on 24 stitches (result of row 15). 24 stitches / 2 = 12 repeats. 12 decreases. 24 - 12 = 12. Pattern states 18. ERROR.\"}]}\n```json\n{\"errors\":[{\"row\":\"3\",\"reason\":\"Instruction '*1sc, increase; rep from * around' on 12 stitches adds 12 stitches (12 repeats), resulting in 24 stitches. Pattern states 15.\"},{\"row\":\"6\",\"reason\":\"Instruction '2sc, increase, (4sc, increase) 5 times, 2sc' on 36 stitches adds 26 stitches (1 + 25), resulting in 62 stitches. Pattern states 36.\"},{\"row\":\"16\",\"reason\":\"Instruction '*2sc, inv dec; rep from * around' on 24 stitches (from row 15) creates 12 repeats, resulting in 12 stitches. Pattern states 18.\"}]}\n```"
+  },
+  {
+   "id": "pilot-0001",
+   "flagged": [
+    3,
+    5,
+    7,
+    9,
+    11,
+    13,
+    15,
+    17,
+    19,
+    21
+   ],
+   "valid": true,
+   "raw": "{\"errors\":[{\"row\":\"R1\",\"reason\":\"Chain 27 minus 1 (for the first sc) equals 26 stitches, but the pattern states 24 sts\"},{\"row\":\"R3\",\"reason\":\"Starting with 24 sts, a decrease at the beginning and two decreases at the end results in 20 sts, but the pattern states 22 sts\"},{\"row\":\"R5\",\"reason\":\"Starting with 22 sts, a decrease at the beginning and two decreases at the end results in 18 sts, but the pattern states 20 sts\"},{\"row\":\"R7\",\"reason\":\"Starting with 20 sts, a decrease at the beginning and two decreases at the end results in 16 sts, but the pattern states 18 sts\"},{\"row\":\"R9\",\"reason\":\"Starting with 18 sts, a decrease at the beginning and two decreases at the end results in 14 sts, but the pattern states 16 sts\"},{\"row\":\"R11\",\"reason\":\"Starting with 16 sts, a decrease at the beginning and two decreases at the end results in 12 sts, but the pattern states 14 sts\"},{\"row\":\"R13\",\"reason\":\"Starting with 14 sts, a decrease at the beginning and two decreases at the end results in 10 sts, but the pattern states 12 sts\"},{\"row\":\"R15\",\"reason\":\"Starting with 12 sts, a decrease at the beginning and two decreases at the end results in 8 sts, but the pattern states 10 sts\"},{\"row\":\"R17\",\"reason\":\"Starting with 10 sts, a decrease at the beginning and two decreases at the end results in 6 sts, but the pattern states 8 sts\"},{\"row\":\"R19\",\"reason\":\"Starting with 8 sts, a decrease at the beginning and two decreases at the end results in 4 sts, but the pattern states 6 sts\"}]}"
+  },
+  {
+   "id": "pilot-0002",
+   "flagged": [],
+   "valid": true,
+   "raw": "{\"errors\":[]}"
+  },
+  {
+   "id": "pilot-0003",
+   "flagged": [],
+   "valid": false,
+   "raw": "{\"errors\":[{\"row\":\"Row 7\",\"reason\":\"The instructions (3+3+3+3+3) total 15 stitches, but the previous row (Row 6) only has 15 stitches available. The pattern states 15 stitches in the result, which is mathematically impossible if the previous row had 15 stitches and the instructions sum to 15 (15=15 is correct, but the pattern likely intended a different stitch count or the previous row count is wrong). Wait, re-evaluating: Row 6 has 15 stitches. Row 7 instructions: 3+3+3+3+3 = 15. 15 stitches worked into 15 stitches is correct. My initial quick scan was wrong. Let me re-check ALL rows carefully.\\n\\nRow 1: Ch 16, sc in 2nd ch from hook across. This creates 15 stitches. Pattern says (15). Correct.\\nRow 2: Ch1, turn. sc in 3, hdc in 2, tr in 5, hdc in 2, sc in 3. Total: 3+2+5+2+3 = 15. Previous row had 15. Correct.\\nRow 3: 1 sc in each st across. 15 stitches. Correct.\\nRow 4: sc in 3, hdc in 2, tr in 5, hdc in 2, sc in 3. Total: 3+2+5+2+3 = 15. Correct.\\nRow 5-6: 1 sc in each st across. 15 stitches. Correct.\\nRow 7: sc in 3, hdc in 3, tr in 3, hdc in 3, sc in 3. Total: 3+3+3+3+3 = 15. Previous row (Row 6) had 15. Correct.\\nRow 8: 1 sc in each st across. 15 stitches. Correct.\\nRow 9: sc in 3, hdc in 3, dc in 3, hdc in 3, sc in 3. Total: 3+3+3+3+3 = 15. Correct.\\nRow 10: 1 sc in each st across. 15 stitches. Correct.\\nRow 11: sc in 1, hdc in 2, dc in 9, hdc in 2, sc in 1. Total: 1+2+9+2+1 = 15. Correct.\\nRow 12-13: 1 sc in each st across. 15 stitches. Correct.\\nRow 14: sc in 1, hdc in 2, dc in 9, hdc in 2, sc in 1. Total: 1+2+9+2+1 = 15. Correct.\\nRow 15: 1 sc in each st across. 15 stitches. Correct.\\nRow 16: sc in 1, hdc in 3, dc in 7, hdc in 3, sc in 1. Total: 1+3+7+3+1 = 15. Correct.\\nRows 17-18: 1 sc in each st across. 15 stitches. Correct.\\n\\nAll stitch counts appear mathematically consistent with the previous row counts. There are no errors in the stitch counts provided in the text.\"}"
+  },
+  {
+   "id": "pilot-0004",
+   "flagged": [
+    5
+   ],
+   "valid": true,
+   "raw": "{\"errors\":[{\"row\":\"R1\",\"reason\":\"The instruction 'DC in 4th CH from hook (skipped chains count as first DC) and each remaining CH' creates 13 stitches (1 for the 4th chain + 12 remaining chains), but the pattern states 12 stitches.\"}]}"
+  },
+  {
+   "id": "pilot-0005",
+   "flagged": [],
+   "valid": true,
+   "raw": "{\"errors\":[]}"
+  },
+  {
+   "id": "pilot-0006",
+   "flagged": [
+    14
+   ],
+   "valid": true,
+   "raw": "{\"errors\":[{\"row\":\"R14\",\"reason\":\"Instruction '*5sc, invdec* 5 times' creates 25 stitches, but the stated count is 30. The previous row had 35 stitches; 5 decreases (1 sc + 1 invdec = 1 st) across 5 repeats reduces the count by 5, resulting in 30, not 25. The pattern likely meant '*4sc, invdec* 5 times' or a different repeat structure to reach 30.\"}]}"
+  },
+  {
+   "id": "pilot-0007",
+   "flagged": [
+    6
+   ],
+   "valid": true,
+   "raw": "{\"errors\":[{\"row\":\"R4\",\"reason\":\"Stitch count mismatch: Instructions yield 24 sts, but pattern states 24 sts. Wait, let me re-calculate R4. Sc (1) + inc (2) + [sc 2 (2), inc (2)] 5x (10) + sc (1) = 1+2+10+1 = 14? No. Sc=1, inc=2. [sc 2, inc] = 2+2=4. 5x = 20. Total = 1+2+20+1 = 24. Okay, R4 is correct. Let me re-check R3. [sc, inc] 6x. sc=1, inc=2. Total 3 per repeat. 6x = 18. Correct. R5. [sc 3, inc] 6x. sc3=3, inc=2. Total 5. 6x=30. Correct. R6. *sc 4, inc; rep 6x. sc4=4, inc=2. Total 6. 6x=36. Correct. R7. [sc 5, inc] 6x. sc5=5, inc=2. Total 7. 6x=42. Correct. R8-11. 1 sc in each st. 42 sts. Correct. R12. [sc 5, sc dec] 6x. sc5=5, dec=1. Total 6. 6x=36. Correct. R13. *sc 4, sc dec; rep 6x. sc4=4, dec=1. Total 5. 6x=30. Correct. R14. [sc 3, sc dec] 6x. sc3=3, dec=1. Total 4. 6x=24. Correct. R15. [sc 2, sc dec] 6x. sc2=2, dec=1. Total 3. 6x=18. Correct. R16. [sc, sc dec] 6x. sc=1, dec=1. Total 2. 6x=12. Correct. R17. [sc dec] 6x. sc=1, dec=1. Total 2. 6x=12. Pattern states 6 sts. Error found.\"}]}"
+  },
+  {
+   "id": "pilot-0008",
+   "flagged": [],
+   "valid": true,
+   "raw": "{\"errors\":[]}"
+  },
+  {
+   "id": "pilot-0009",
+   "flagged": [],
+   "valid": true,
+   "raw": "{\"errors\":[]}"
+  },
+  {
+   "id": "pilot-0010",
+   "flagged": [
+    3,
+    5
+   ],
+   "valid": true,
+   "raw": "{\"errors\":[{\"row\":\"Row 1\",\"reason\":\"The instruction 'SC in 2nd CH from hook, SC in each CH across' on 15 chains results in 13 stitches, but the pattern states 12 stitches.\"},{\"row\":\"Row 9\",\"reason\":\"The instruction 'SC in each st across' on 12 stitches results in 12 stitches, but the pattern states 7 stitches.\"}]}"
+  },
+  {
+   "id": "pilot-0011",
+   "flagged": [
+    13
+   ],
+   "valid": true,
+   "raw": "{\"errors\":[{\"row\":\"Round 13-14\",\"reason\":\"Instruction 'SC 24' implies working 24 stitches in a single row, but the pattern is worked in spiral rounds. This instruction should be '1 SC in each st around' to maintain the 24 stitch count.\"}]}"
+  },
+  {
+   "id": "pilot-0012",
+   "flagged": [
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16
+   ],
+   "valid": true,
+   "raw": "{\"errors\":[{\"row\":\"R1\",\"reason\":\"Ch 20 creates 19 spaces; Sc in 2nd ch from hook and in each ch across works 19 stitches, but the count (19) is correct. Wait, Ch 20 = 19 spaces. Sc in 2nd ch from hook (1) + each ch across (19) = 20 stitches? No. Ch 20 creates 19 spaces between chains. Sc in 2nd ch from hook (1 stitch) + sc in each of the remaining 19 chains (19 stitches) = 20 stitches total. The pattern states (19). This is an error.\"},{\"row\":\"R3\",\"reason\":\"Starting with 19 stitches. Sc dec (19-1=18), sc in each st to last 2 sts (18-2=16), sc dec (16-1=15). The pattern states (17). This is an error.\"},{\"row\":\"R5\",\"reason\":\"Starting with 17 stitches. Sc dec (16), sc in each st to last 2 sts (14), sc dec (13). The pattern states (15). This is an error.\"},{\"row\":\"R7\",\"reason\":\"Starting with 15 stitches. Sc dec (14), sc in each st to last 2 sts (12), sc dec (11). The pattern states (13). This is an error.\"},{\"row\":\"R9\",\"reason\":\"Starting with 13 stitches. Sc dec (12), sc in each st to last 2 sts (10), sc dec (9). The pattern states (11). This is an error.\"},{\"row\":\"R11\",\"reason\":\"Starting with 11 stitches. Sc dec (10), sc in each st to last 2 sts (8), sc dec (7). The pattern states (9). This is an error.\"},{\"row\":\"R13\",\"reason\":\"Starting with 9 stitches. Sc dec (8), sc in each st to last 2 sts (6), sc dec (5). The pattern states (7). This is an error.\"}]}"
+  },
+  {
+   "id": "pilot-0013",
+   "flagged": [
+    7
+   ],
+   "valid": true,
+   "raw": "{\"errors\":[{\"row\":\"Round 6\",\"reason\":\"Instruction '(2sc, 2 sc in next st) x 3' creates 12 stitches, but the previous round (Round 5) has 9 stitches. The repeat 'x 3' requires 3 base units, but 9 stitches divided by the 2-stitch base unit of the repeat (2sc + 2sc) equals 4.5, meaning the repeat does not fit evenly.\"}]}"
+  },
+  {
+   "id": "pilot-0014",
+   "flagged": [
+    10
+   ],
+   "valid": true,
+   "raw": "{\"errors\":[{\"row\":\"Rnd 10\",\"reason\":\"The instruction '*sc 4, 2 sc in next st; rep from * around' creates 6 stitches per repeat. To reach 18 stitches, 3 repeats are needed. The pattern states '(18)', but the instruction text does not explicitly show the repeat count (e.g., '*... * 3'), making the stitch count derivation ambiguous or potentially incorrect if the user assumes 3 repeats without seeing them written.\"}]}"
+  }
+ ]
+}

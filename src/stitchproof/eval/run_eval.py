@@ -40,11 +40,11 @@ APPROACHES = {
     "D": ("ft", "parse"),
 }
 
-# US$ per million tokens (prompt, completion) for sampling. Check the Tinker console for current prices;
-# these are used for the pre-run estimate only.
+# US$ per million tokens (prompt, completion) for sampling, from the account's Tinker billing rates
+# (prompt at the uncached rate, so estimates are an upper bound). Used for the pre-run estimate only.
 PRICES = {
-    BASE_MODEL: (0.10, 0.30),
-    TEACHER_MODEL: (0.30, 0.90),
+    BASE_MODEL: (0.33, 1.005),
+    TEACHER_MODEL: (0.33, 0.84),
 }
 
 
