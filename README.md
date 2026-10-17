@@ -101,6 +101,8 @@ python -m stitchproof.eval.report
 python -m stitchproof.eval.equivalence --n 50                 # with llama-server running
 ```
 
+**Real drafts (private):** put a permitted draft in `data/real/` (gitignored) and run `python -m stitchproof.eval.label_real data/real/<draft>.txt` in your own terminal. It shows each line's local parse and lets you accept or correct it, then saves gold labels to `data/real/real_labelled.jsonl` for `run_eval --set real`. It refuses to run in CI or without a terminal, and real pattern text never leaves `data/real/`.
+
 Every script prints a cost estimate first and stops above a budget limit.
 
 ## Limitations
