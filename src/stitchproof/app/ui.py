@@ -16,6 +16,7 @@ os.environ.setdefault("GRADIO_ANALYTICS_ENABLED", "False")
 
 import gradio as gr  # noqa: E402
 
+from . import photo_reader  # noqa: E402
 from .local_model import LineParser, ReplayBackend, backend_status, check_pattern, check_row, get_backend  # noqa: E402
 from .report_export import COLUMNS, FOOTER, ICON, silhouette, summary_line, table_rows, to_html, to_markdown  # noqa: E402
 
@@ -50,6 +51,16 @@ def read_upload(path: str | None) -> tuple[str, bool]:
     if not path:
         return "", False
     p = Path(path)
+    if p.suffix.lower() in photo_reader.IMAGE_TYPES:
+        try:
+            text = photo_reader.transcribe(p)
+        except photo_reader.PhotoReaderUnavailable as e:
+            raise gr.Error(f"Reading photos needs Gemma 4 running locally in Ollama ({e}). Please paste the pattern text instead.")
+        except OSError as e:
+            raise gr.Error(f"Gemma couldn't read this photo ({type(e).__name__}). Please paste the pattern text instead.")
+        if not text.strip():
+            raise gr.Error("Gemma couldn't find any text in this photo. Please paste the pattern text instead.")
+        return text, True
     if p.suffix.lower() == ".pdf":
         from pypdf import PdfReader
 
@@ -98,10 +109,16 @@ def build(backend_kind: str | None = None) -> gr.Blocks:
 
     def run_check(text, upload):
         merge = False
+        note = ""
         if upload:
             text, merge = read_upload(upload)
+            if Path(upload).suffix.lower() in photo_reader.IMAGE_TYPES:
+                note = (
+                    f"\n\nTranscribed from your photo by {photo_reader.model_name()} on this computer. "
+                    "The text box now holds the transcription: compare it with the photo, fix anything misread, and press Check again."
+                )
         if not text or not text.strip():
-            raise gr.Error("Paste a pattern or upload a .txt, .md or .pdf file.")
+            raise gr.Error("Paste a pattern or upload a .txt, .md, .pdf or photo.")
         try:
             check = check_pattern(text, parser, merge_wrapped=merge)
         except OSError as e:
@@ -112,7 +129,7 @@ def build(backend_kind: str | None = None) -> gr.Blocks:
         md_path.write_text(to_markdown(check))
         html_path.write_text(to_html(check))
         rows = [r[1:] for r in table_rows(check)]
-        return f"### {summary_line(check)}", _details_html(check), fig, rows, [str(md_path), str(html_path)]
+        return f"### {summary_line(check)}{note}", _details_html(check), fig, rows, [str(md_path), str(html_path)], text, None
 
     def run_row(prev, row_text):
         prev_n = int(prev) if prev not in (None, "") else None
@@ -127,21 +144,29 @@ def build(backend_kind: str | None = None) -> gr.Blocks:
         gr.Markdown("# StitchProof\nA local tech editor for crochet patterns: the model reads each row, plain code checks every stitch count.")
         if not backend.is_local:
             gr.HTML(f'<div class="sp-banner-cloud">{_esc(backend.name)}. Your pattern is NOT private in this mode.</div>')
-        gr.Markdown(f"Model: **{backend.name}** · {'ready' if ok else '⚠ ' + status}")
+        vok, vstatus = photo_reader.status()
+        gr.Markdown(
+            f"Model: **{backend.name}** · {'ready' if ok else '⚠ ' + status}  \n"
+            f"Photo reader: **{'Gemma 4, ' + vstatus if vok else 'off'}**{'' if vok else ' (' + vstatus + '; paste text instead)'}"
+        )
 
         with gr.Tab("Check a pattern"):
             with gr.Row():
                 with gr.Column(scale=3):
                     text = gr.Textbox(label="Pattern text", lines=16, placeholder="Paste your pattern here, one row per line", value=example)
                 with gr.Column(scale=1):
-                    upload = gr.File(label="…or upload .txt / .md / .pdf", file_types=[".txt", ".md", ".pdf"], type="filepath")
+                    upload = gr.File(
+                        label="…or upload .txt / .md / .pdf, or a photo of a printed pattern",
+                        file_types=[".txt", ".md", ".pdf", *photo_reader.IMAGE_TYPES],
+                        type="filepath",
+                    )
                     go = gr.Button("Check stitch counts", variant="primary")
             summary = gr.Markdown()
             details = gr.HTML()
             chart = gr.Plot(label="Silhouette: stitches made per row (error rows are hatched red and labelled)")
             table = gr.Dataframe(headers=COLUMNS[1:], label="Every row", wrap=True, interactive=False)
             files = gr.File(label="Download report (Markdown, HTML)", file_count="multiple")
-            go.click(run_check, [text, upload], [summary, details, chart, table, files])
+            go.click(run_check, [text, upload], [summary, details, chart, table, files, text, upload])
 
         with gr.Tab("Stuck on a row"):
             gr.Markdown("Is the pattern wrong, or am I? Enter how many stitches you had at the end of the previous row and paste the row you're stuck on.")
