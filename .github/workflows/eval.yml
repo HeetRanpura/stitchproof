@@ -1,0 +1,53 @@
+name: Eval (synthetic sets)
+
+# Manual only: runs approaches C (base + simulator) and D (fine-tuned + simulator) on a
+# synthetic eval set via Tinker and posts the summary. Never touches data/real/.
+on:
+  workflow_dispatch:
+    inputs:
+      set:
+        description: "Eval set"
+        type: choice
+        options: [synth, ood]
+        default: synth
+      limit:
+        description: "Max patterns (blank = all)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      TINKER_API_KEY: ${{ secrets.TINKER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[tinker,dev]"
+      - name: Unit tests
+        run: pytest -q
+      - name: Run C and D
+        run: |
+          LIMIT=""
+          if [ -n "${{ inputs.limit }}" ]; then LIMIT="--limit ${{ inputs.limit }}"; fi
+          python -m stitchproof.eval.run_eval --approach C --set ${{ inputs.set }} $LIMIT --max-usd 3
+          python -m stitchproof.eval.run_eval --approach D --set ${{ inputs.set }} $LIMIT --max-usd 3
+      - name: Summary
+        run: |
+          python -m stitchproof.eval.report
+          cat eval/results/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eval-results-${{ inputs.set }}
+          path: |
+            eval/results/summary.md
+            eval/results/C_${{ inputs.set }}.json
+            eval/results/D_${{ inputs.set }}.json
