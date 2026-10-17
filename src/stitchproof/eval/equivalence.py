@@ -33,23 +33,29 @@ def sample_lines(n: int, seed: int = 0) -> list[tuple[str, str | None, str]]:
     return random.Random(seed).sample(items, min(n, len(items)))
 
 
+def local_complete(messages: list[dict], url: str = "http://127.0.0.1:8080") -> str:
+    import urllib.request
+
+    body = {"messages": messages, "temperature": 0, "max_tokens": 400, "chat_template_kwargs": {"enable_thinking": False}}
+    req = urllib.request.Request(f"{url}/v1/chat/completions", data=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=300) as r:
+        return json.loads(r.read())["choices"][0]["message"]["content"] or ""
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=50)
     ap.add_argument("--label", default="q4_k_m")
     args = ap.parse_args()
-    from ..app.local_model import LlamaServerBackend
-
     items = sample_lines(args.n)
     msgs = [messages_for_line(*it) for it in items]
 
-    local = LlamaServerBackend()
     t0 = time.time()
     local_out = []
     lat = []
     for m in msgs:
         s = time.time()
-        local_out.append(local.complete(m))
+        local_out.append(local_complete(m))
         lat.append(time.time() - s)
     total_local = time.time() - t0
 
