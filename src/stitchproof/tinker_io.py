@@ -22,10 +22,20 @@ CACHE_DIR = Path(".stitchproof_cache")
 # Renderer per model family. Qwen3.5 answers without a thinking block.
 _RENDERERS = {
     "Qwen/Qwen3.5": "qwen3_5_disable_thinking",
-    "openai/gpt-oss": "gpt_oss_medium_reasoning",
+    "openai/gpt-oss": "gpt_oss_low_reasoning",
     "moonshotai/Kimi-K2.6": "kimi_k26_disable_thinking",
     "Qwen/Qwen3.5-397B": "qwen3_5_disable_thinking",
 }
+
+
+def adapt_messages(model: str, messages: list[dict]) -> list[dict]:
+    """gpt-oss renderers add their own system message; fold ours into the first user turn."""
+    if not model.startswith("openai/gpt-oss") or not messages or messages[0]["role"] != "system":
+        return messages
+    sys_msg, rest = messages[0], list(messages[1:])
+    if rest and rest[0]["role"] == "user":
+        rest[0] = {"role": "user", "content": f"{sys_msg['content']}\n\n{rest[0]['content']}"}
+    return rest
 
 
 def renderer_name_for(model: str) -> str:
@@ -83,7 +93,7 @@ class Sampler:
                     self._cache[d["k"]] = d["v"]
 
     def prompt_tokens(self, messages: list[dict]) -> int:
-        return self.renderer.build_generation_prompt(messages).length
+        return self.renderer.build_generation_prompt(adapt_messages(self.model, messages)).length
 
     async def complete(self, messages: list[dict], cache: bool = True) -> str:
         from tinker_cookbook.renderers import get_text_content
@@ -93,7 +103,7 @@ class Sampler:
             self.usage.cached += 1
             self.usage.calls += 1
             return self._cache[key]
-        prompt = self.renderer.build_generation_prompt(messages)
+        prompt = self.renderer.build_generation_prompt(adapt_messages(self.model, messages))
         params = self._tinker.SamplingParams(
             stop=self.renderer.get_stop_sequences(), max_tokens=self.max_tokens, temperature=self.temperature
         )
@@ -129,4 +139,4 @@ def estimate_tokens(sampler_model: str, batch: list[list[dict]], max_out: int) -
 
     tok = get_tokenizer(sampler_model)
     r = renderers.get_renderer(renderer_name_for(sampler_model), tok, model_name=sampler_model)
-    return sum(r.build_generation_prompt(m).length for m in batch), max_out * len(batch)
+    return sum(r.build_generation_prompt(adapt_messages(sampler_model, m)).length for m in batch), max_out * len(batch)

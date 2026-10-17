@@ -27,7 +27,7 @@ from .build_dataset import EVAL_MIX, SEED, pattern_record, write_jsonl
 OUT = Path("data/ood/ood.jsonl")
 N_PATTERNS = 25
 FALLBACK_WRITER = "Qwen/Qwen3.5-397B-A17B"
-PRICES = (0.60, 2.50)
+PRICES = (2.205, 5.49)  # Kimi-K2.6 rates from the account billing
 
 SYSTEM = """You are a crochet designer writing up a pattern from a structured outline.
 Each outline entry is one line of the pattern. Write exactly one line of pattern text per entry, in the same order, in your own natural style (US terms). No blank lines, headings or commentary beyond the entries.
@@ -149,7 +149,7 @@ def main() -> None:
     ap.add_argument("--writer", default=OOD_WRITER_MODEL)
     ap.add_argument("--max-usd", type=float, default=5.0)
     args = ap.parse_args()
-    structs = make_structures(N_PATTERNS + 10)  # spares for patterns that fail validation
+    structs = make_structures(N_PATTERNS + 8)  # spares for patterns that fail validation
     msgs = [_messages([_entry(gl) for gl in s[0].lines], None) for s in structs]
     p_tok, c_tok = estimate_tokens(args.writer, msgs, 1500)
     est = (p_tok / 1e6 * PRICES[0] + c_tok / 1e6 * PRICES[1]) * 1.5

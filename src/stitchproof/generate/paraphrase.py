@@ -1,4 +1,8 @@
-"""Teacher rewrite of ~35% of train/val patterns into a natural designer voice (Tinker).
+"""Teacher rewrites of train/val patterns into a natural designer voice (Tinker).
+
+Two teacher families give the training data more than one "voice": gpt-oss-120b rewrites one
+share of the patterns and Qwen3.5-397B another; the rest stay template-rendered. (The OOD eval
+set is written by a third family, Kimi, so it stays out-of-generator.)
 
     python -m stitchproof.generate.paraphrase --dry-run   # cost estimate only
     python -m stitchproof.generate.paraphrase             # writes data/generated/paraphrased.jsonl
@@ -22,9 +26,13 @@ from pathlib import Path
 from ..tinker_io import TEACHER_MODEL, Sampler, estimate_tokens
 from .build_dataset import OUT, read_jsonl, write_jsonl
 
-SHARE = 0.35
+SECOND_TEACHER = "Qwen/Qwen3.5-397B-A17B"
+# (teacher, share of patterns). Selection is by a hash of the pattern id, so it's reproducible.
+TEACHERS = [(TEACHER_MODEL, 0.25), (SECOND_TEACHER, 0.25)]
 CACHE = OUT / "paraphrased.jsonl"
-PRICES = (0.30, 0.90)  # US$/M prompt, completion for the teacher (estimate only; check the console)
+# US$/M (prompt, completion), estimate only. gpt-oss from the account's billing rates;
+# Qwen3.5-397B rate not yet seen on the account, so a conservative guess.
+PRICES = {TEACHER_MODEL: (0.33, 0.84), SECOND_TEACHER: (1.0, 3.0)}
 
 SYSTEM = """You rewrite crochet patterns in a warm, natural designer voice, like a pattern sold on Etsy.
 Rules:
@@ -37,8 +45,14 @@ Rules:
 _NUM = re.compile(r"\d+")
 
 
-def selected(pid: str) -> bool:
-    return int(hashlib.sha1(pid.encode()).hexdigest(), 16) % 1000 < SHARE * 1000
+def teacher_for(pid: str) -> str | None:
+    u = (int(hashlib.sha1(pid.encode()).hexdigest(), 16) % 1000) / 1000
+    lo = 0.0
+    for model, share in TEACHERS:
+        if lo <= u < lo + share:
+            return model
+        lo += share
+    return None
 
 
 def _label_prefix(gold: dict) -> str | None:
@@ -85,8 +99,8 @@ async def run(records: list[dict], sampler: Sampler) -> list[dict]:
             lines = _split_lines(raw)
             feedback = validate(rec, lines)
             if feedback is None:
-                return {"id": rec["id"], "ok": True, "attempts": attempt + 1, "lines": lines}
-        return {"id": rec["id"], "ok": False, "reason": feedback}
+                return {"id": rec["id"], "ok": True, "teacher": sampler.model, "attempts": attempt + 1, "lines": lines}
+        return {"id": rec["id"], "ok": False, "teacher": sampler.model, "reason": feedback}
 
     return await asyncio.gather(*(one(r) for r in records))
 
@@ -96,22 +110,30 @@ def main() -> None:
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--max-usd", type=float, default=5.0)
     args = ap.parse_args()
-    recs = [r for split in ("train", "val") for r in read_jsonl(OUT / f"{split}_patterns.jsonl") if selected(r["id"])]
-    p_tok, c_tok = estimate_tokens(TEACHER_MODEL, [_messages(r) for r in recs], 2500)
-    est = (p_tok / 1e6 * PRICES[0] + c_tok / 1e6 * PRICES[1]) * 1.5  # allow for retries
-    print(f"{len(recs)} patterns selected for paraphrase; about {p_tok:,} prompt + up to {c_tok:,} completion tokens per pass; about US${est:.2f} with retries")
+    all_recs = [r for split in ("train", "val") for r in read_jsonl(OUT / f"{split}_patterns.jsonl")]
+    plan = {m: [r for r in all_recs if teacher_for(r["id"]) == m] for m, _ in TEACHERS}
+    est = 0.0
+    for model, recs in plan.items():
+        p_tok, c_tok = estimate_tokens(model, [_messages(r) for r in recs], 1200)
+        pp, cp = PRICES[model]
+        e = (p_tok / 1e6 * pp + c_tok / 1e6 * cp) * 1.5  # allow for retries
+        est += e
+        print(f"{model}: {len(recs)} patterns, about {p_tok:,} prompt + up to {c_tok:,} completion tokens, about US${e:.2f} with retries")
+    print(f"total about US${est:.2f}")
     if args.dry_run:
         return
     if est > args.max_usd:
         raise SystemExit("over budget; stopping")
-    sampler = Sampler(model=TEACHER_MODEL, max_tokens=4000, temperature=0.7, concurrency=16)
-    results = asyncio.run(run(recs, sampler))
+    results = []
+    for model, recs in plan.items():
+        sampler = Sampler(model=model, max_tokens=3000, temperature=0.7, concurrency=16)
+        res = asyncio.run(run(recs, sampler))
+        print(f"{model}: paraphrased {sum(r['ok'] for r in res)}/{len(res)}; usage {sampler.usage}")
+        fails = Counter(r["reason"].split(":")[-1].split("[")[0].strip() for r in res if not r["ok"])
+        if fails:
+            print("  rejections:", dict(fails))
+        results += res
     write_jsonl(CACHE, results)
-    ok = sum(r["ok"] for r in results)
-    print(f"paraphrased {ok}/{len(results)} patterns; usage {sampler.usage}")
-    fails = Counter(r["reason"].split(":")[-1].split("[")[0].strip() for r in results if not r["ok"])
-    if fails:
-        print("rejections:", dict(fails))
 
 
 if __name__ == "__main__":
