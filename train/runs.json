@@ -22,5 +22,6 @@
   "state_path": "tinker://670a310e-c92b-5ed7-9220-2273843d65ee:train:0/weights/final",
   "sampler_path": "tinker://670a310e-c92b-5ed7-9220-2273843d65ee:train:0/sampler_weights/final",
   "elapsed_tokens": 999710
- }
+ },
+ "external_weights_path": "tinker://72d554df-f1d1-5c79-8fa6-ca427f8b67d0:train:0/external_weights/stitchproof-v1"
 }
