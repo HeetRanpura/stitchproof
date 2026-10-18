@@ -27,7 +27,7 @@ export interface CheckDone {
 }
 
 export interface AppStatus {
-  model: { name: string; ready: boolean; detail: string; local: boolean; command: string };
+  model: { name: string; ready: boolean; detail: string; local: boolean; demo?: boolean; command: string };
   photo_reader: { ready: boolean; detail: string; model: string };
 }
 

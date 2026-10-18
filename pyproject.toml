@@ -13,11 +13,13 @@ dependencies = [
     "jinja2",
     "pypdf",
     "matplotlib",
+    "fastapi",
+    "python-multipart",
 ]
 
 [project.optional-dependencies]
 tinker = ["tinker", "tinker-cookbook"]
-app = ["fastapi", "uvicorn", "python-multipart", "gradio"]
+app = ["uvicorn", "gradio"]
 dev = ["pytest"]
 
 [project.scripts]

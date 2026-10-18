@@ -42,6 +42,7 @@ And because the model is small and the counting is plain code, the whole thing r
 - [Tech stack](#tech-stack)
 - [Results](#results)
 - [Run it locally](#run-it-locally)
+- [Online demo (Vercel)](#online-demo-vercel)
 - [Reproduce the data, training and evaluation](#reproduce-the-data-training-and-evaluation)
 - [Project structure](#project-structure)
 - [Testing](#testing)
@@ -257,6 +258,10 @@ Open **http://127.0.0.1:7860** and click *"Or try a sample pattern with two mist
 - **Frontend development:** the UI is prebuilt in `src/stitchproof/app/web/`, so Node isn't needed to run it. To work on it: `npm --prefix frontend install && npm --prefix frontend run dev` (proxies `/api` to the server), then `npm --prefix frontend run build`.
 
 ---
+
+### Online demo (Vercel)
+
+The repo deploys to Vercel as one project with two services ([vercel.json](vercel.json)): **`frontend`** (the Vite app, served at `/`) and **`app`** (the FastAPI server, served at `/api/*`). Vercel can't run llama.cpp or Ollama, so the hosted app runs in **demo mode**. It replays the fine-tuned model's real, recorded answers for the sample pattern ([data/demo/recorded.jsonl](data/demo/recorded.jsonl), made with `python -m stitchproof.app.record_demo`) and labels itself as a demo. Other patterns come back as CAN'T CHECK with a pointer to installing StitchProof, and photo uploads are disabled. To check your own patterns, install it locally: that's the private, full version.
 
 ## Reproduce the data, training and evaluation
 

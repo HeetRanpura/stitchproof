@@ -122,7 +122,7 @@ export function Masthead({ status, mode, onMode }: { status: AppStatus | null; m
           <StatusChip
             ok={model ? model.ready : null}
             icon={<CpuIcon size={15} />}
-            label={model ? (model.ready ? "Model ready · on this computer" : "Model offline") : "Checking model…"}
+            label={model ? (model.demo ? "Online demo · recorded answers" : model.ready ? "Model ready · on this computer" : "Model offline") : "Checking model…"}
             detail={model ? `${model.name}: ${model.detail}` : "contacting the local server"}
           />
           <StatusChip

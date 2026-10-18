@@ -31,6 +31,7 @@ CACHE_DIR = Path(os.environ.get("STITCHPROOF_CACHE", Path.home() / ".stitchproof
 class Backend:
     name = "backend"
     is_local = True
+    is_demo = False
     concurrency = 4
 
     def complete(self, messages: list[dict]) -> str:
@@ -76,13 +77,21 @@ class OllamaBackend(Backend):
 
 
 class ReplayBackend(Backend):
-    """Answers with the gold program for lines found in the synthetic data files. For demos and tests only."""
+    """Demo backend with no model: replays recorded fine-tuned-model answers (data/demo/recorded.jsonl,
+    matched on the exact prompt), else gold programs for lines in the synthetic data files."""
 
-    name = "replay (gold answers for synthetic examples, no model)"
+    name = "demo: recorded answers from the fine-tuned model"
     concurrency = 1
+    is_demo = True
+    RECORDED = Path("data/demo/recorded.jsonl")
 
-    def __init__(self, files: list[Path] | None = None):
-        files = files or [Path("data/generated/eval_synth.jsonl"), Path("data/generated/pilot.jsonl"), Path("data/ood/ood.jsonl")]
+    def __init__(self, files: list[Path] | None = None, recorded: Path | None = None):
+        files = files if files is not None else [Path("data/generated/eval_synth.jsonl"), Path("data/generated/pilot.jsonl"), Path("data/ood/ood.jsonl")]
+        self.recorded: dict[str, str] = {}
+        rec_path = recorded if recorded is not None else (self.RECORDED if files else None)
+        if rec_path is not None and rec_path.exists():
+            for row in (json.loads(l) for l in rec_path.read_text().splitlines() if l.strip()):
+                self.recorded[row["user"]] = row["output"]
         self.gold: dict[str, str] = {}
         for f in files:
             if f.exists():
@@ -91,8 +100,14 @@ class ReplayBackend(Backend):
                         self.gold.setdefault(line["text"], to_compact_json(LineProgram.model_validate(line["gold"])))
 
     def complete(self, messages):
-        line = messages[-1]["content"].split("\nLine: ", 1)[-1]
-        return self.gold.get(line, '{"kind":"unsupported","unsupported_reason":"replay mode only knows the synthetic example lines"}')
+        user = messages[-1]["content"]
+        if user in self.recorded:
+            return self.recorded[user]
+        line = user.split("\nLine: ", 1)[-1]
+        return self.gold.get(
+            line,
+            '{"kind":"unsupported","unsupported_reason":"the online demo only knows its sample patterns; install StitchProof to check your own"}',
+        )
 
 
 class TinkerDemoBackend(Backend):

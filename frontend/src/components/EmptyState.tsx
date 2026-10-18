@@ -8,10 +8,11 @@ interface Props {
   onExample: () => void;
   photoReady: boolean;
   photoDetail: string;
+  demo: boolean;
 }
 
 /** First screen: an editorial page, not a form. */
-export function EmptyState({ onPaste, onFile, onPhoto, onExample, photoReady, photoDetail }: Props) {
+export function EmptyState({ onPaste, onFile, onPhoto, onExample, photoReady, photoDetail, demo }: Props) {
   const actions = [
     { icon: ClipboardTextIcon, title: "Paste the text", body: "Rows, notes and all. One row per line.", onClick: onPaste, disabled: false },
     { icon: FilePdfIcon, title: "Open a file", body: ".txt, .md or a PDF with a text layer.", onClick: onFile, disabled: false },
@@ -38,6 +39,11 @@ export function EmptyState({ onPaste, onFile, onPhoto, onExample, photoReady, ph
         <p className="mt-5 max-w-[46ch] font-serif text-[17px] leading-relaxed text-ink-2">
           StitchProof works through your rows in order and flags any round whose instructions don't make the count you wrote, with the numbers to prove it.
         </p>
+        {demo && (
+          <p className="mt-6 max-w-[52ch] rounded-lg border border-rule bg-card-2 px-4 py-3 text-[14px] leading-relaxed text-ink-2">
+            <span className="font-medium text-ink">This is the online demo.</span> It replays the fine-tuned model's recorded answers for the sample pattern below. Your own patterns need StitchProof installed, where the model runs privately on your computer.
+          </p>
+        )}
         <ul className="mt-8 grid max-w-md gap-2.5">
           {actions.map((a) => (
             <li key={a.title}>

@@ -20,6 +20,7 @@ def client(monkeypatch, tmp_path):
     server.parser.cache_clear()
     rec = next(r for r in (make_pattern("srvtest", i, EVAL_MIX, heldout=True) for i in range(50)) if r["seeded_errors"])
     backend = local_model.ReplayBackend(files=[])
+    backend.is_demo = False  # stands in for a local install
     backend.gold = {l["text"]: json.dumps(l["gold"]) for l in rec["lines"]}
     monkeypatch.setattr(server, "parser", lambda: local_model.LineParser(backend))
     c = TestClient(server.app)
@@ -37,7 +38,7 @@ def _events(body: str):
 
 def test_status(client):
     r = client.get("/api/status").json()
-    assert "replay" in r["model"]["name"] and r["model"]["local"] is True
+    assert r["model"]["demo"] is False and r["model"]["local"] is True
     assert "photo_reader" in r and "ready" in r["photo_reader"]
 
 
@@ -111,3 +112,39 @@ def test_unknown_api_404_and_spa_fallback(client):
 
 def test_binds_localhost_only():
     assert server.HOST == "127.0.0.1"
+
+
+def test_vercel_demo_entry_replays_recorded_model_answers(monkeypatch, tmp_path):
+    """The hosted demo: no model, recorded fine-tuned answers for the sample pattern."""
+    import importlib
+    import re
+    from pathlib import Path
+
+    monkeypatch.setenv("STITCHPROOF_BACKEND", "replay")
+    monkeypatch.setenv("STITCHPROOF_CACHE", str(tmp_path / "cache"))
+    monkeypatch.setattr(local_model, "CACHE_DIR", tmp_path / "cache")
+    entry = importlib.import_module("stitchproof.app.vercel_entry")
+    server.parser.cache_clear()
+    c = TestClient(entry.app)
+
+    st = c.get("/api/status").json()
+    assert st["model"]["demo"] is True and st["model"]["ready"] is True
+    assert st["photo_reader"]["ready"] is False
+    r = c.post("/api/upload", files={"file": ("p.jpg", io.BytesIO(b"\xff\xd8"))})
+    assert r.status_code == 422 and "installed app" in r.json()["detail"]["message"]
+
+    example = re.search(r"EXAMPLE = `(.*?)`;", Path("frontend/src/lib/example.ts").read_text(), re.S).group(1)
+    r = c.post("/api/check", json={"text": example}).json()
+    errors = [l["label"] for l in r["lines"] if l["status"] == "ERROR"]
+    assert errors == ["Rnd 5", "Rnd 11"]
+
+    fixed = example.replace("(31)", "(30)")
+    r = c.post("/api/check", json={"text": fixed}).json()
+    assert [l["label"] for l in r["lines"] if l["status"] == "ERROR"] == ["Rnd 11"]
+
+    r = c.post("/api/row", json={"previous_count": 24, "row": "Rnd 5: (sc 3, inc) x6 (31)"}).json()
+    assert "not you" in r["answer"]
+
+    r = c.post("/api/check", json={"text": "Rnd 1: 7 sc in MR (7)"}).json()
+    assert r["lines"][0]["status"] == "CAN'T CHECK" and "install StitchProof" in r["lines"][0]["explanation"]
+    server.parser.cache_clear()

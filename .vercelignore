@@ -1,0 +1,16 @@
+# Not needed by the hosted demo (keeps the function bundle small)
+models/
+docs/
+eval/
+train/logs/
+.stitchproof_cache/
+.venv/
+frontend/node_modules/
+src/stitchproof/app/web/
+data/real/
+data/generated/train.jsonl
+data/generated/train_patterns.jsonl
+data/generated/val.jsonl
+data/generated/val_patterns.jsonl
+data/generated/paraphrased.jsonl
+.env

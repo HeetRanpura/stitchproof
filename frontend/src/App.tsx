@@ -10,6 +10,8 @@ import { EXAMPLE } from "./lib/example";
 import { isFlagged } from "./lib/status";
 import type { ApiError, AppStatus, Counts, LineResult } from "./types";
 
+const REPO_URL = "https://github.com/HeetRanpura/stitchproof";
+
 export default function App() {
   const [mode, setMode] = useState<Mode>("check");
   const [status, setStatus] = useState<AppStatus | null>(null);
@@ -147,7 +149,8 @@ export default function App() {
                 onStartTyping={() => setPhase("edit")}
                 photo={photo}
                 photoReady={!!status?.photo_reader.ready}
-                photoDetail={status?.photo_reader.detail ?? "checking"}
+                photoDetail={status?.model.demo ? "not available in the online demo" : status?.photo_reader.detail ?? "checking"}
+                demo={!!status?.model.demo}
                 error={error}
                 onDismissError={() => setError(null)}
                 readingWhat={readingWhat}
@@ -167,10 +170,20 @@ export default function App() {
           )}
         </main>
         <footer className="mt-12 flex flex-col gap-2 border-t border-rule py-6 text-[13px] text-ink-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="inline-flex items-center gap-2">
-            <LockSimpleIcon size={15} className="text-ok" aria-hidden="true" />
-            Runs on your computer. Your pattern never leaves it.
-          </p>
+          {status?.model.demo ? (
+            <p className="max-w-[70ch]">
+              Online demo: it replays the fine-tuned model's recorded answers for the sample pattern and runs no model. To check your own patterns privately,{" "}
+              <a href={REPO_URL} className="font-medium text-accent underline underline-offset-4">
+                install StitchProof
+              </a>{" "}
+              and run it on your computer.
+            </p>
+          ) : (
+            <p className="inline-flex items-center gap-2">
+              <LockSimpleIcon size={15} className="text-ok" aria-hidden="true" />
+              Runs on your computer. Your pattern never leaves it.
+            </p>
+          )}
           <p className="text-ink-3">StitchProof checks stitch math only, not gauge, sizing or shape.</p>
         </footer>
       </div>

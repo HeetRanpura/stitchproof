@@ -22,3 +22,5 @@ dist/
 train/logs/
 train/*.log
 frontend/node_modules/
+.vercel/
+frontend/dist/

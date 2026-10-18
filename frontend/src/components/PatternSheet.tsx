@@ -28,6 +28,7 @@ interface Props {
   error: ApiError | null;
   onDismissError: () => void;
   readingWhat: string;
+  demo: boolean;
 }
 
 const ACCEPT_FILES = ".txt,.md,.markdown,.pdf";
@@ -87,6 +88,7 @@ export function PatternSheet(p: Props) {
           onExample={p.onExample}
           photoReady={p.photoReady}
           photoDetail={p.photoDetail}
+          demo={p.demo}
         />
       ) : (
         <>
