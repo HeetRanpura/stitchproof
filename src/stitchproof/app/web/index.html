@@ -6,8 +6,14 @@
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>StitchProof</title>
-    <script type="module" crossorigin src="/assets/index-WjMwkNT6.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DrrJVtC6.css">
+    <script>
+      try {
+        var t = localStorage.getItem("stitchproof-theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+    <script type="module" crossorigin src="/assets/index-CSUyMKeE.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Dz7Bs-du.css">
   </head>
   <body>
     <div id="root"></div>

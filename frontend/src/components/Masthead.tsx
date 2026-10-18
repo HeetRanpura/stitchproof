@@ -1,4 +1,5 @@
-import { CameraIcon, CpuIcon } from "@phosphor-icons/react";
+import { CameraIcon, CpuIcon, MoonIcon, SunIcon } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
 import type { AppStatus } from "../types";
 import { StitchMark } from "./StitchMark";
 
@@ -48,6 +49,58 @@ function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => voi
   );
 }
 
+type Theme = "light" | "dark";
+
+function systemTheme(): Theme {
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function storedTheme(): Theme | null {
+  try {
+    const t = localStorage.getItem("stitchproof-theme");
+    return t === "light" || t === "dark" ? t : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Light/dark switch. Follows the system until the user picks one; the choice is remembered on this browser. */
+function ThemeToggle() {
+  const [theme, setTheme] = useState<Theme>(() => storedTheme() ?? systemTheme());
+
+  useEffect(() => {
+    const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
+    const follow = () => storedTheme() === null && setTheme(systemTheme());
+    mq?.addEventListener("change", follow);
+    return () => mq?.removeEventListener("change", follow);
+  }, []);
+
+  function toggle() {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.dataset.theme = next;
+    try {
+      localStorage.setItem("stitchproof-theme", next);
+    } catch {
+      /* private mode: the switch still works for this visit */
+    }
+  }
+
+  const Icon = theme === "dark" ? SunIcon : MoonIcon;
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      className="press inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full border border-rule bg-card px-3.5 text-sm font-medium text-ink-2 hover:text-ink"
+    >
+      <Icon size={17} aria-hidden="true" />
+      <span>{theme === "dark" ? "Light" : "Dark"}</span>
+    </button>
+  );
+}
+
 export function Masthead({ status, mode, onMode }: { status: AppStatus | null; mode: Mode; onMode: (m: Mode) => void }) {
   const model = status?.model;
   const photo = status?.photo_reader;
@@ -79,7 +132,10 @@ export function Masthead({ status, mode, onMode }: { status: AppStatus | null; m
             detail={photo ? photo.detail : "checking Ollama"}
           />
         </div>
-        <ModeSwitch mode={mode} onChange={onMode} />
+        <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+          <ThemeToggle />
+          <ModeSwitch mode={mode} onChange={onMode} />
+        </div>
       </div>
     </header>
   );

@@ -85,6 +85,20 @@ const scenes = {
     await new Promise((r) => setTimeout(r, 500));
     await p.screenshot({ path: `${out}/app_maker.png` });
   },
+  async theme() {
+    const p = await page({ height: 900 });
+    const bg = () => p.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    const before = await bg();
+    await p.evaluate(() => document.querySelector('button[aria-label="Switch to dark mode"]').click());
+    await new Promise((r) => setTimeout(r, 300));
+    const after = await bg();
+    await p.reload({ waitUntil: "networkidle0" });
+    const reloaded = await bg();
+    const label = await p.evaluate(() => document.querySelector('button[aria-label$="mode"]').getAttribute("aria-label"));
+    log(`theme: light ${before} -> dark ${after}; after reload ${reloaded}; button now "${label}"`);
+    if (after === before || reloaded !== after) throw new Error("toggle did not switch or persist");
+    await p.screenshot({ path: `${out}/app_empty_dark.png` });
+  },
   async photo() {
     if (!photo) return log("photo: set PHOTO=/path/to/image.jpg");
     const p = await page({ height: 1100 });
