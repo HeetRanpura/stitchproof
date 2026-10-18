@@ -173,6 +173,18 @@ class LineParser:
             self.cache_path.write_text(json.dumps(self.cache))
         return [parse_model_output(self.cache[k]) for k in keys]
 
+    def parse_iter(self, items: list[tuple[str, str | None, str]]):
+        """Yield (index, ParseResult) in order, as each line is parsed. Cached lines come first, instantly."""
+        msgs = [messages_for_line(h, p, l) for h, p, l in items]
+        keys = [self._key(m) for m in msgs]
+        try:
+            for i, (m, k) in enumerate(zip(msgs, keys)):
+                if k not in self.cache:
+                    self.cache[k] = self.backend.complete(m)
+                yield i, parse_model_output(self.cache[k])
+        finally:
+            self.cache_path.write_text(json.dumps(self.cache))
+
 
 @dataclass
 class PatternCheck:
@@ -192,6 +204,25 @@ def check_pattern(text: str, parser: LineParser, merge_wrapped: bool = False) ->
     for r in results:
         counts[r.status.value] = counts.get(r.status.value, 0) + 1
     return PatternCheck(seg.header, [l.text for l in seg.lines], parses, results, parser.backend.name, counts)
+
+
+def check_pattern_iter(text: str, parser: LineParser, merge_wrapped: bool = False):
+    """Stream a check: yields ("start", Segmented), then ("line", LineResult) per line, then ("done", PatternCheck).
+
+    Exact, because the simulator is sequential: line i's result depends only on lines up to i,
+    so each new line is simulated together with the prefix before it.
+    """
+    seg = segment(text, merge_wrapped=merge_wrapped)
+    yield "start", seg
+    parses: list[ParseResult] = []
+    for _i, pr in parser.parse_iter([(seg.header, l.prev_text, l.text) for l in seg.lines]):
+        parses.append(pr)
+        yield "line", simulate([p.program for p in parses])[-1]
+    results = simulate([p.program for p in parses])
+    counts: dict[str, int] = {}
+    for r in results:
+        counts[r.status.value] = counts.get(r.status.value, 0) + 1
+    yield "done", PatternCheck(seg.header, [l.text for l in seg.lines], parses, results, parser.backend.name, counts)
 
 
 def check_row(previous_count: int | None, row_text: str, parser: LineParser) -> tuple[str, LineResult | None]:

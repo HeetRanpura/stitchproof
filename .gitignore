@@ -21,3 +21,4 @@ dist/
 .claude/
 train/logs/
 train/*.log
+frontend/node_modules/

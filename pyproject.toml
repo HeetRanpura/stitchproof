@@ -17,8 +17,11 @@ dependencies = [
 
 [project.optional-dependencies]
 tinker = ["tinker", "tinker-cookbook"]
-app = ["gradio"]
+app = ["fastapi", "uvicorn", "python-multipart", "gradio"]
 dev = ["pytest"]
+
+[project.scripts]
+stitchproof = "stitchproof.app.server:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -26,6 +29,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/stitchproof"]
+artifacts = ["src/stitchproof/app/web/**"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

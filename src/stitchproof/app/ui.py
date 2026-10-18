@@ -17,6 +17,7 @@ os.environ.setdefault("GRADIO_ANALYTICS_ENABLED", "False")
 import gradio as gr  # noqa: E402
 
 from . import photo_reader  # noqa: E402
+from .inputs import InputError, read_file  # noqa: E402
 from .local_model import LineParser, ReplayBackend, backend_status, check_pattern, check_row, get_backend  # noqa: E402
 from .report_export import COLUMNS, FOOTER, ICON, silhouette, summary_line, table_rows, to_html, to_markdown  # noqa: E402
 
@@ -50,26 +51,11 @@ def replay_example() -> str:
 def read_upload(path: str | None) -> tuple[str, bool]:
     if not path:
         return "", False
-    p = Path(path)
-    if p.suffix.lower() in photo_reader.IMAGE_TYPES:
-        try:
-            text = photo_reader.transcribe(p)
-        except photo_reader.PhotoReaderUnavailable as e:
-            raise gr.Error(f"Reading photos needs Gemma 4 running locally in Ollama ({e}). Please paste the pattern text instead.")
-        except OSError as e:
-            raise gr.Error(f"Gemma couldn't read this photo ({type(e).__name__}). Please paste the pattern text instead.")
-        if not text.strip():
-            raise gr.Error("Gemma couldn't find any text in this photo. Please paste the pattern text instead.")
-        return text, True
-    if p.suffix.lower() == ".pdf":
-        from pypdf import PdfReader
-
-        reader = PdfReader(str(p))
-        text = "\n".join((page.extract_text() or "") for page in reader.pages)
-        if not text.strip():
-            raise gr.Error("This PDF has no text layer (it may be a scan). Please paste the pattern text instead.")
-        return text, True
-    return p.read_text(errors="replace"), False
+    try:
+        text, merge, _source = read_file(path)
+    except InputError as e:
+        raise gr.Error(str(e))
+    return text, merge
 
 
 def _details_html(check) -> str:
