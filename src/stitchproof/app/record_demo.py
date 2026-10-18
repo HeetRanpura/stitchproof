@@ -1,11 +1,11 @@
-"""Record the fine-tuned model's real answers for the app's sample inputs, for the online demo.
+"""Record the fine-tuned model's real answers for the app's sample inputs, for demo mode.
 
     llama-server ... (the local StitchProof model)
     python -m stitchproof.app.record_demo
 
-Writes data/demo/recorded.jsonl: one line per prompt with the model's raw output. The demo
-backend (STITCHPROOF_BACKEND=replay) replays these for exactly the same prompts, so the hosted
-demo shows genuine model output while running no model. Inputs are the app's own sample
+Writes data/demo/recorded.jsonl: one line per prompt with the model's raw output. Demo mode
+(STITCHPROOF_BACKEND=replay) replays these for exactly the same prompts, so the app can be
+tried with genuine model output when the local model isn't running. Inputs are the app's own sample
 pattern (frontend/src/lib/example.ts), the same pattern with Rnd 5 fixed, and the maker-mode rows.
 """
 from __future__ import annotations

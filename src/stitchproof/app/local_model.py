@@ -3,7 +3,8 @@
 Backends (choose with STITCHPROOF_BACKEND):
 - "llama" (default): a local llama.cpp server (`llama-server -m stitchproof-q4_k_m.gguf --port 8080`).
 - "ollama": a local Ollama model (STITCHPROOF_MODEL, default "stitchproof").
-- "replay": developer demo that replays gold programs for the synthetic data files. No model.
+- "replay": demo mode with no model: replays the fine-tuned model's recorded answers for the sample
+  pattern (data/demo/recorded.jsonl), else gold programs for the synthetic data files.
 - "tinker-demo": CLOUD DEMO MODE. Lines are sent to Tinker. Off unless explicitly chosen,
   and the UI labels it on every page.
 
@@ -106,7 +107,7 @@ class ReplayBackend(Backend):
         line = user.split("\nLine: ", 1)[-1]
         return self.gold.get(
             line,
-            '{"kind":"unsupported","unsupported_reason":"the online demo only knows its sample patterns; install StitchProof to check your own"}',
+            '{"kind":"unsupported","unsupported_reason":"demo mode only knows the sample pattern; start the local model to check your own"}',
         )
 
 

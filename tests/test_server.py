@@ -114,29 +114,25 @@ def test_binds_localhost_only():
     assert server.HOST == "127.0.0.1"
 
 
-def test_vercel_demo_entry_replays_recorded_model_answers(monkeypatch, tmp_path):
-    """The hosted demo: no model, recorded fine-tuned answers for the sample pattern."""
-    import importlib
+def test_demo_mode_replays_recorded_model_answers(monkeypatch, tmp_path):
+    """Demo mode (no model running): recorded fine-tuned answers for the sample pattern."""
     import re
     from pathlib import Path
 
-    monkeypatch.setenv("STITCHPROOF_BACKEND", "replay")
-    monkeypatch.setenv("STITCHPROOF_CACHE", str(tmp_path / "cache"))
     monkeypatch.setattr(local_model, "CACHE_DIR", tmp_path / "cache")
-    entry = importlib.import_module("stitchproof.app.vercel_entry")
-    server.parser.cache_clear()
-    c = TestClient(entry.app)
+    backend = local_model.ReplayBackend()
+    monkeypatch.setattr(server, "parser", lambda: local_model.LineParser(backend))
+    c = TestClient(server.app)
 
     st = c.get("/api/status").json()
     assert st["model"]["demo"] is True and st["model"]["ready"] is True
     assert st["photo_reader"]["ready"] is False
     r = c.post("/api/upload", files={"file": ("p.jpg", io.BytesIO(b"\xff\xd8"))})
-    assert r.status_code == 422 and "installed app" in r.json()["detail"]["message"]
+    assert r.status_code == 422 and "demo mode" in r.json()["detail"]["message"].lower()
 
     example = re.search(r"EXAMPLE = `(.*?)`;", Path("frontend/src/lib/example.ts").read_text(), re.S).group(1)
     r = c.post("/api/check", json={"text": example}).json()
-    errors = [l["label"] for l in r["lines"] if l["status"] == "ERROR"]
-    assert errors == ["Rnd 5", "Rnd 11"]
+    assert [l["label"] for l in r["lines"] if l["status"] == "ERROR"] == ["Rnd 5", "Rnd 11"]
 
     fixed = example.replace("(31)", "(30)")
     r = c.post("/api/check", json={"text": fixed}).json()
@@ -146,5 +142,4 @@ def test_vercel_demo_entry_replays_recorded_model_answers(monkeypatch, tmp_path)
     assert "not you" in r["answer"]
 
     r = c.post("/api/check", json={"text": "Rnd 1: 7 sc in MR (7)"}).json()
-    assert r["lines"][0]["status"] == "CAN'T CHECK" and "install StitchProof" in r["lines"][0]["explanation"]
-    server.parser.cache_clear()
+    assert r["lines"][0]["status"] == "CAN'T CHECK" and "local model" in r["lines"][0]["explanation"]

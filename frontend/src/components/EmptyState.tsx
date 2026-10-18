@@ -41,7 +41,7 @@ export function EmptyState({ onPaste, onFile, onPhoto, onExample, photoReady, ph
         </p>
         {demo && (
           <p className="mt-6 max-w-[52ch] rounded-lg border border-rule bg-card-2 px-4 py-3 text-[14px] leading-relaxed text-ink-2">
-            <span className="font-medium text-ink">This is the online demo.</span> It replays the fine-tuned model's recorded answers for the sample pattern below. Your own patterns need StitchProof installed, where the model runs privately on your computer.
+            <span className="font-medium text-ink">Demo mode.</span> No model is running: StitchProof replays the fine-tuned model's recorded answers for the sample pattern below. To check your own patterns, start the local model (see the README).
           </p>
         )}
         <ul className="mt-8 grid max-w-md gap-2.5">

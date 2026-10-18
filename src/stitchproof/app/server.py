@@ -76,8 +76,8 @@ app = FastAPI(title="StitchProof", docs_url=None, redoc_url=None, openapi_url=No
 def status() -> dict:
     b = parser().backend
     ok, why = backend_status(b)
-    if b.is_demo:  # the hosted demo has no Gemma; never upload photos there
-        vok, vwhy = False, "only in the installed app"
+    if b.is_demo:  # demo mode replays recorded answers; photos need the real Gemma reader
+        vok, vwhy = False, "not available in demo mode"
     else:
         vok, vwhy = photo_reader.status()
     return {
@@ -126,7 +126,7 @@ async def upload(file: UploadFile = File(...)) -> dict:
         raise HTTPException(413, detail={"message": "That file is larger than 20 MB."})
     suffix = Path(file.filename or "upload").suffix.lower()
     if parser().backend.is_demo and suffix in photo_reader.IMAGE_TYPES:
-        raise HTTPException(422, detail={"message": "Photos are read by Gemma 4 on your own computer, so they work only in the installed app."})
+        raise HTTPException(422, detail={"message": "Demo mode can't read photos. Start Ollama with Gemma 4 and the local model to read photos."})
     fd, tmp = tempfile.mkstemp(prefix="stitchproof_", suffix=suffix)
     try:
         with os.fdopen(fd, "wb") as f:

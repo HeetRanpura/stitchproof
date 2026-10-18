@@ -149,7 +149,7 @@ export default function App() {
                 onStartTyping={() => setPhase("edit")}
                 photo={photo}
                 photoReady={!!status?.photo_reader.ready}
-                photoDetail={status?.model.demo ? "not available in the online demo" : status?.photo_reader.detail ?? "checking"}
+                photoDetail={status?.model.demo ? "not available in demo mode" : status?.photo_reader.detail ?? "checking"}
                 demo={!!status?.model.demo}
                 error={error}
                 onDismissError={() => setError(null)}
@@ -172,11 +172,11 @@ export default function App() {
         <footer className="mt-12 flex flex-col gap-2 border-t border-rule py-6 text-[13px] text-ink-2 sm:flex-row sm:items-center sm:justify-between">
           {status?.model.demo ? (
             <p className="max-w-[70ch]">
-              Online demo: it replays the fine-tuned model's recorded answers for the sample pattern and runs no model. To check your own patterns privately,{" "}
+              Demo mode: no model is running, so StitchProof replays the fine-tuned model's recorded answers for the sample pattern. To check your own patterns,{" "}
               <a href={REPO_URL} className="font-medium text-accent underline underline-offset-4">
-                install StitchProof
-              </a>{" "}
-              and run it on your computer.
+                start the local model
+              </a>
+              . Everything still runs on your computer.
             </p>
           ) : (
             <p className="inline-flex items-center gap-2">
