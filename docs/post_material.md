@@ -23,7 +23,7 @@ StitchProof splits the job in two:
 
 Every flag comes with the numbers: *"Rnd 5 says (31), but '(sc 3, inc) x6' uses 24 of 24 stitches and makes 30."* You don't have to trust the AI; you can check its arithmetic, because there isn't any.
 
-[screenshot: the app, "Check a pattern" tab with two errors flagged]
+![StitchProof checking a pattern: each row annotated, two errors flagged](screenshots/app_review.png)
 
 ![Silhouette chart](screenshots/silhouette_example.png)
 
@@ -46,7 +46,7 @@ I compared four approaches on the same patterns, with the same prompt and parser
 
 The base model plus simulator (C) catches a lot of errors, but it raises false alarms on 42.6% of clean rows, because it can't write the format reliably: only 78.0% (663/850) of its outputs are valid JSON. The fine-tune gets 100.0% (850/850) valid JSON and copies the stated count faithfully on 100.0% (616/616) of rows.
 
-[chart: eval/results/headline.png]
+![Errors caught and false alarms per approach](../eval/results/headline.png)
 
 ### Where it still fails (honestly)
 
@@ -67,6 +67,20 @@ Patterns are a designer's unreleased work, so StitchProof runs locally. I export
 - the app binds to localhost only and sends nothing anywhere: turn Wi-Fi off and it still works
 
 One gotcha worth sharing: Tinker trains Qwen3.5's linear-attention Q, K and V projections as separate LoRAs, but the model stores them fused. I rebuilt an exact fused LoRA (stacked A matrices, block-diagonal B matrices, rescaled for llama.cpp's alpha/rank) so llama.cpp could load it.
+
+## Photos of printed patterns, with Gemma 4
+
+Plenty of patterns live on paper. StitchProof can read a photo or scan with **Gemma 4** (`gemma4:e4b-it-qat` in Ollama), locally. Gemma only transcribes; the fine-tuned model and the simulator do the rest. On 12 held-out patterns rendered as clean scans and as phone-style photos:
+
+| | Original text | Scan → Gemma | Photo → Gemma |
+| --- | --- | --- | --- |
+| Numbers kept | – | 98.9% (357/361) | 98.1% (354/361) |
+| Errors caught (end to end) | 100.0% (12/12) | 91.7% (11/12) | 100.0% (12/12) |
+| False alarms (end to end) | 23.2% (22/95) | 25.3% (24/95) | 22.1% (21/95) |
+
+Only 42.2% (68/161) of photo lines come back character-perfect (Gemma likes to drop " - " separators), so the app shows the photo next to the editable transcription before checking.
+
+![Photo review: the photo beside Gemma's editable transcription](screenshots/app_photo_review.png)
 
 ## Two modes, one engine
 

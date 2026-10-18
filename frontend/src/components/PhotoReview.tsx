@@ -19,7 +19,7 @@ export function PhotoFrame({ url, model }: { url: string; model: string }) {
         className="press group relative block w-full -rotate-[1.5deg] cursor-zoom-in rounded-md border border-rule bg-card p-2.5 pb-9 shadow-[0_18px_36px_-20px_rgb(var(--shadow)/0.45)]"
         aria-label="Zoom the photo"
       >
-        <img src={url} alt="Your photo of the pattern page" className="aspect-[4/3] w-full rounded-sm object-cover object-top" />
+        <img src={url} alt="Your photo of the pattern page" className="h-auto max-h-[34rem] w-full rounded-sm bg-card-2 object-contain" />
         <span className="absolute right-3 bottom-2 inline-flex items-center gap-1 font-mono text-[11px] text-ink-3">
           <MagnifyingGlassPlusIcon size={14} aria-hidden="true" /> zoom
         </span>

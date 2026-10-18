@@ -64,6 +64,8 @@ Four approaches, the same eval sets, the same prompt and the same parser (temper
 
 **Local model:** a Q4_K_M base built from the official Qwen weights plus the LoRA (2.93 GB on disk, 3.18 GB RAM, about 2.4 s per line on an M4 MacBook) agrees with the Tinker-hosted model on 100.0% (50/50) of val lines. See [eval/results/export.md](eval/results/export.md).
 
+**Photo reader (Gemma 4):** for printed patterns, a local `gemma4:e4b-it-qat` (Ollama) transcribes a photo or scan to text, which then goes through the same pipeline. On 12 held-out patterns rendered as a clean scan and as a phone-style photo (slight rotation, uneven light, noise, JPEG), it kept 98.9% (357/361) of the numbers from scans and 98.1% (354/361) from photos. End to end, StitchProof caught 91.7% (11/12) of the seeded errors from scans and 100.0% (12/12) from photos (100.0% (12/12) from the original text), with 25.3% (24/95) and 22.1% (21/95) false alarms (23.2% (22/95) from the original text). Only 50.3% (81/161) and 42.2% (68/161) of lines came back character-perfect (it tends to drop separators like " - "), so the app always shows the photo beside the editable transcription. About 15 s per image on the M4. Details: [eval/results/photo_reader.md](eval/results/photo_reader.md).
+
 Example output: [docs/example_report.md](docs/example_report.md).
 
 ![Silhouette chart: stitch counts row by row for a small ball, with two error rounds hatched and labelled](docs/screenshots/silhouette_example.png)
@@ -75,16 +77,28 @@ uv venv --python 3.11 && uv pip install -e ".[app,dev]"
 pytest -q
 ```
 
-The app needs the fine-tuned model running locally through llama.cpp: the 4-bit base GGUF plus the StitchProof LoRA, built by `python -m stitchproof.train.export download|peft|gguf` (see [eval/results/export.md](eval/results/export.md)).
+StitchProof needs the fine-tuned model running locally through llama.cpp: the 4-bit base GGUF plus the StitchProof LoRA, built by `python -m stitchproof.train.export download|peft|gguf` (see [eval/results/export.md](eval/results/export.md)). Then start the app:
 
 ```bash
 llama-server -m models/stitchproof-base-q4_k_m.gguf --lora models/stitchproof-lora-v1.gguf --port 8080 --host 127.0.0.1 --jinja -c 4096 -np 1
-python -m stitchproof.app.ui
+python -m stitchproof.app.server
 ```
 
-Open http://127.0.0.1:7860. To try the interface without a model, `STITCHPROOF_BACKEND=replay` replays gold answers for the synthetic example patterns. (An Ollama backend exists, `STITCHPROOF_BACKEND=ollama`, but isn't tested with the LoRA yet.)
+Open http://127.0.0.1:7860.
 
-**Fully offline:** once the GGUF files are on disk, turn Wi-Fi off and start the two commands above. The app binds to 127.0.0.1 only, has Gradio analytics disabled, and sends nothing anywhere. Parsed lines are cached in `~/.stitchproof_cache/` on your machine, so re-checking an edited pattern is fast.
+- **Check a pattern:** paste a pattern, open a .txt / .md / .pdf, or photograph a printed page. Each row is annotated in place as it's checked, like a spellchecker. Select a row to see the numbers behind its verdict; the silhouette chart plots stitches per row; reports download as HTML or Markdown.
+- **Stuck on a row:** enter your previous stitch count and one row to find out whether the pattern or your count is off.
+- **Photos (optional):** `ollama pull gemma4:e4b-it-qat`. Gemma 4 transcribes the photo on your computer, and the app shows the photo beside the editable transcription so you can fix anything misread before checking.
+
+The web UI is prebuilt in `src/stitchproof/app/web/`, so no Node is needed to run it. To work on it: `npm --prefix frontend install && npm --prefix frontend run dev` (proxies `/api` to the server). The earlier Gradio UI is still available as `python -m stitchproof.app.ui`. To try the interface without a model, `STITCHPROOF_BACKEND=replay` replays gold answers for the synthetic example patterns.
+
+**Fully offline:** once the model files are on disk, turn Wi-Fi off and start the two commands above. The server binds to 127.0.0.1 only, the fonts and icons are bundled, and nothing is sent anywhere. Parsed lines are cached in `~/.stitchproof_cache/` on your machine, so re-checking an edited pattern is fast.
+
+![StitchProof web app: a pattern annotated row by row, with two errors flagged](docs/screenshots/app_review.png)
+
+| Photo review (Gemma 4) | Stuck on a row | Phone |
+| --- | --- | --- |
+| ![Photo beside its editable transcription](docs/screenshots/app_photo_review.png) | ![One-row check](docs/screenshots/app_maker.png) | ![Mobile layout](docs/screenshots/app_mobile_review.png) |
 
 ## Reproduce the data, training and eval
 
